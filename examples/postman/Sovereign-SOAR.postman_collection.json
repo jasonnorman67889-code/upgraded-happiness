@@ -1,0 +1,153 @@
+{
+  "info": {
+    "_postman_id": "93051376-0c5f-47db-a54c-acf882ed9f22",
+    "name": "Sovereign-SOAR",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Audits Page 1",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{bearerToken}}",
+            "disabled": true
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/audits?limit={{auditLimit}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "audits"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "{{auditLimit}}"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "let payload = {};",
+              "try { payload = pm.response.json(); } catch (e) {}",
+              "if (payload.nextCursor) {",
+              "  pm.environment.set('nextCursor', payload.nextCursor);",
+              "}",
+              "pm.test('Page 1 returns array', function () {",
+              "  pm.expect(Array.isArray(payload.items || [])).to.eql(true);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Audits Page 2 (Cursor)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{bearerToken}}",
+            "disabled": true
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/audits?limit={{auditLimit}}&cursor={{nextCursor}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "audits"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "{{auditLimit}}"
+            },
+            {
+              "key": "cursor",
+              "value": "{{nextCursor}}"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('nextCursor is set', function () {",
+              "  pm.expect(pm.environment.get('nextCursor')).to.be.ok;",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Process Incident",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{bearerToken}}",
+            "disabled": true
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"incidentId\": \"INC-1001\",\n  \"entities\": [\n    {\n      \"type\": \"ip\",\n      \"address\": \"8.8.8.8\"\n    }\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/workflow/sentinel-replacement",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "workflow",
+            "sentinel-replacement"
+          ]
+        }
+      }
+    }
+  ]
+}

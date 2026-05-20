@@ -1,0 +1,9 @@
+{
+  "incidentId": "INC-1001",
+  "entities": [
+    {
+      "type": "ip",
+      "address": "8.8.8.8"
+    }
+  ]
+}

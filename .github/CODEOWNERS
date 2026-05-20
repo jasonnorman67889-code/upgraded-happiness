@@ -1,0 +1,7 @@
+# Default ownership for the repository
+* @jasonnorman67889-code
+
+# Security-sensitive areas
+.github/workflows/ @jasonnorman67889-code
+src/middleware/ @jasonnorman67889-code
+src/config.js @jasonnorman67889-code

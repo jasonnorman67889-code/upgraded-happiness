@@ -64,6 +64,9 @@ Optional audit filter:
 - `JWT_MODE=disabled`: no auth checks
 - `JWT_MODE=hs256`: verifies bearer token with `JWT_SECRET`
 - `JWT_MODE=jwks`: verifies RS256 with `JWKS_URI`
+- Non-dev guardrail in `src/config.js`:
+   - if `NODE_ENV` is not `development`, `JWT_MODE=disabled` is automatically overridden to `jwks`
+   - invalid `JWT_MODE` values fall back to safe defaults (`disabled` in dev, `jwks` in non-dev)
 
 ## WebSocket HUD Stream
 - Endpoint: `ws://localhost:3000/ws/hud`
@@ -143,6 +146,10 @@ Generated key files are written to `devkeys/`.
 - Require status checks to pass before merging
 - Required check:
    - `test`
+- Require signed commits
+- Require CODEOWNERS review
+- CODEOWNERS file:
+   - `.github/CODEOWNERS`
 - Require branches to be up to date before merging
 - Restrict force pushes and deletions on `main`
 

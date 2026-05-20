@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/jasonnorman67889-code/upgraded-happiness/actions/workflows/ci.yml/badge.svg)](https://github.com/jasonnorman67889-code/upgraded-happiness/actions/workflows/ci.yml)
 [![CD](https://github.com/jasonnorman67889-code/upgraded-happiness/actions/workflows/cd.yml/badge.svg)](https://github.com/jasonnorman67889-code/upgraded-happiness/actions/workflows/cd.yml)
+[![Release](https://github.com/jasonnorman67889-code/upgraded-happiness/actions/workflows/release.yml/badge.svg)](https://github.com/jasonnorman67889-code/upgraded-happiness/actions/workflows/release.yml)
 
 Node.js microservice replacement for Azure Logic App playbooks:
 - PB-Enrich-GeoIP
@@ -125,6 +126,25 @@ Generated key files are written to `devkeys/`.
    - run CD via workflow dispatch with `deploy=true`
    - set repository secret `DEPLOY_WEBHOOK_URL`
    - CD sends repository, sha, and image reference to the webhook
+
+## GitHub Actions Release
+- Workflow: `.github/workflows/release.yml`
+- Triggers:
+   - tag push matching `v*`
+   - manual dispatch (`workflow_dispatch`) with an existing tag
+- Release behavior:
+   - verifies tag exists
+   - creates/updates GitHub Release for the tag
+   - auto-generates release notes
+
+## Branch Protection Recommendations
+- Branch: `main`
+- Require pull request before merging
+- Require status checks to pass before merging
+- Required check:
+   - `test`
+- Require branches to be up to date before merging
+- Restrict force pushes and deletions on `main`
 
 ## Troubleshooting CI
 - API health check timeout:

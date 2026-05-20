@@ -1,6 +1,6 @@
 # Sovereign-SOAR
 
-[![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml)
+[![CI](https://github.com/jasonnorman67889-code/upgraded-happiness/actions/workflows/ci.yml/badge.svg)](https://github.com/jasonnorman67889-code/upgraded-happiness/actions/workflows/ci.yml)
 
 Node.js microservice replacement for Azure Logic App playbooks:
 - PB-Enrich-GeoIP

@@ -1,0 +1,10 @@
+{
+  "incidentId": "INC-1002",
+  "actorId": "ACT-RED-01",
+  "entities": [
+    {
+      "type": "ip",
+      "address": "8.8.8.8"
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 # Sovereign-SOAR
 
 [![CI](https://github.com/jasonnorman67889-code/upgraded-happiness/actions/workflows/ci.yml/badge.svg)](https://github.com/jasonnorman67889-code/upgraded-happiness/actions/workflows/ci.yml)
+[![CD](https://github.com/jasonnorman67889-code/upgraded-happiness/actions/workflows/cd.yml/badge.svg)](https://github.com/jasonnorman67889-code/upgraded-happiness/actions/workflows/cd.yml)
 
 Node.js microservice replacement for Azure Logic App playbooks:
 - PB-Enrich-GeoIP
@@ -110,6 +111,20 @@ Generated key files are written to `devkeys/`.
 - Workflow: `.github/workflows/ci.yml`
 - Triggers: `push`, `pull_request`
 - CI provisions Redis + Postgres service containers, starts API/worker, waits for `/health`, and runs `npm run test:ci`.
+
+## GitHub Actions CD
+- Workflow: `.github/workflows/cd.yml`
+- Triggers:
+   - push to `main`
+   - tag push matching `v*`
+   - manual dispatch (`workflow_dispatch`)
+- CD publishes Docker image tags to GHCR:
+   - `ghcr.io/jasonnorman67889-code/upgraded-happiness`
+   - tags include branch, tag, sha, and `latest` on default branch
+- Optional manual deploy hook:
+   - run CD via workflow dispatch with `deploy=true`
+   - set repository secret `DEPLOY_WEBHOOK_URL`
+   - CD sends repository, sha, and image reference to the webhook
 
 ## Troubleshooting CI
 - API health check timeout:

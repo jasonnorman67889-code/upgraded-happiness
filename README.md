@@ -122,10 +122,18 @@ Generated key files are written to `devkeys/`.
 - CD publishes Docker image tags to GHCR:
    - `ghcr.io/jasonnorman67889-code/upgraded-happiness`
    - tags include branch, tag, sha, and `latest` on default branch
-- Optional manual deploy hook:
-   - run CD via workflow dispatch with `deploy=true`
-   - set repository secret `DEPLOY_WEBHOOK_URL`
-   - CD sends repository, sha, and image reference to the webhook
+- Azure deployment target:
+   - deploys image `ghcr.io/jasonnorman67889-code/upgraded-happiness:sha-<commit_sha>` to Azure Container Apps
+   - deploy runs on push to `main` (and can also be triggered manually)
+   - required repository secrets:
+      - `AZURE_CLIENT_ID`
+      - `AZURE_TENANT_ID`
+      - `AZURE_SUBSCRIPTION_ID`
+      - `AZURE_RESOURCE_GROUP`
+      - `AZURE_CONTAINER_APP_NAME`
+   - optional repository secrets for private GHCR pulls from Container Apps:
+      - `GHCR_PULL_USERNAME`
+      - `GHCR_PULL_TOKEN`
 
 ## GitHub Actions Release
 - Workflow: `.github/workflows/release.yml`

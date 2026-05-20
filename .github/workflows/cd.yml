@@ -16,6 +16,7 @@ on:
 permissions:
   contents: read
   packages: write
+  id-token: write
 
 jobs:
   publish:
@@ -51,7 +52,9 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+            ghcr.io/${{ github.repository }}:sha-${{ github.sha }}
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Publish summary
@@ -59,22 +62,49 @@ jobs:
           echo "Published image tags:" >> "$GITHUB_STEP_SUMMARY"
           echo "${{ steps.meta.outputs.tags }}" >> "$GITHUB_STEP_SUMMARY"
 
-  deploy:
+  deploy_azure:
     runs-on: ubuntu-latest
     needs: publish
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true'
+    if: github.ref_name == 'main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true')
 
     steps:
-      - name: Trigger deploy webhook
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Set Container App registry credentials (optional)
+        if: ${{ secrets.GHCR_PULL_USERNAME != '' && secrets.GHCR_PULL_TOKEN != '' }}
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az extension add --name containerapp --upgrade --allow-preview true
+            az containerapp registry set \
+              --name "${{ secrets.AZURE_CONTAINER_APP_NAME }}" \
+              --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+              --server ghcr.io \
+              --username "${{ secrets.GHCR_PULL_USERNAME }}" \
+              --password "${{ secrets.GHCR_PULL_TOKEN }}"
+
+      - name: Deploy image to Azure Container App
         env:
-          DEPLOY_WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
+          IMAGE_REF: ghcr.io/${{ github.repository }}:sha-${{ github.sha }}
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az extension add --name containerapp --upgrade --allow-preview true
+            az containerapp update \
+              --name "${{ secrets.AZURE_CONTAINER_APP_NAME }}" \
+              --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+              --image "$IMAGE_REF"
+
+      - name: Publish deploy summary
+        env:
           IMAGE_REF: ghcr.io/${{ github.repository }}:sha-${{ github.sha }}
         run: |
-          if [ -z "$DEPLOY_WEBHOOK_URL" ]; then
-            echo "DEPLOY_WEBHOOK_URL secret is not set"
-            exit 1
-          fi
-
-          curl -fsS -X POST "$DEPLOY_WEBHOOK_URL" \
-            -H "Content-Type: application/json" \
-            -d "{\"repository\":\"${{ github.repository }}\",\"sha\":\"${{ github.sha }}\",\"image\":\"$IMAGE_REF\"}"
+          echo "Azure deploy completed" >> "$GITHUB_STEP_SUMMARY"
+          echo "Container App: ${{ secrets.AZURE_CONTAINER_APP_NAME }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Resource Group: ${{ secrets.AZURE_RESOURCE_GROUP }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Image: $IMAGE_REF" >> "$GITHUB_STEP_SUMMARY"
